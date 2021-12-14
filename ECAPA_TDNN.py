@@ -361,7 +361,7 @@ class _Conv1d(nn.Module):
         if self.kernel_size % 2 == 0:
             raise ValueError(
                 "The field kernel size must be an odd number. Got %s."
-                % (self.kernel_size)
+                % self.kernel_size
             )
         return in_channels
 

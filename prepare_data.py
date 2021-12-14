@@ -61,6 +61,7 @@ def prepare_voxceleb(hparams):
 
     return
 
+
 # Used for verification split
 def _get_utterance_split_lists(hparams):
     """

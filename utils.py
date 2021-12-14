@@ -347,10 +347,16 @@ def load_data_csv(csv_path, replacements={}):
     return result
 
 
-def load_audio(path, sr=None):
+def load_audio(wav_file, num_frames=None, frame_offset=0, sr=None):
     # from scipy.io import wavfile
     # this works on apple m1
-    sample_rate, signal = wavfile.read("/mnt/ml-stuff2/voxceleb1/dev/wav/id10001/1zcIwhmdeo4/00001.wav")
+    sample_rate, signal = wavfile.read(wav_file)
+
+    if num_frames is None:
+        num_frames = len(signal)
+
+    signal = signal[frame_offset:num_frames]
+
     signal = signal / 32767.0
     signal = signal.astype('float32')
     signal = torch.tensor(signal)
