@@ -2408,9 +2408,12 @@ def EER(positive_scores, negative_scores):
     thresholds, _ = torch.sort(torch.cat([thresholds, interm_thresholds]))
 
     # Computing False Rejection Rate (miss detection)
-    positive_scores = torch.cat(
-        len(thresholds) * [positive_scores.unsqueeze(0)]
-    )
+    #positive_scores = torch.cat(
+    #    len(thresholds) * [positive_scores.unsqueeze(0)]
+    #)
+    positive_scores = len(thresholds) * [positive_scores.unsqueeze(0)]
+    positive_scores = torch.cat(positive_scores)
+
     pos_scores_threshold = positive_scores.transpose(0, 1) <= thresholds
     FRR = (pos_scores_threshold.sum(0)).float() / positive_scores.shape[1]
     del positive_scores
