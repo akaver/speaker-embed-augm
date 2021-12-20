@@ -53,6 +53,7 @@ def main():
     )
 
     trainer.fit(model, data)
+    trainer.test(model, data)
 
 
 if __name__ == '__main__':

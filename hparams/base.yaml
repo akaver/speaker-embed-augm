@@ -28,7 +28,7 @@ test_pairs_out_file: !ref <data_folder>/verification.txt
 verification_file: !ref <data_folder>/verification.txt
 
 # number of unique speakers to use (before split)
-speaker_quantity: 250
+speaker_quantity: 2500
 
 # number of random test pairs to use from verification_file
 test_pairs_quantity: 200
