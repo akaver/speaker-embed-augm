@@ -1,7 +1,7 @@
 # model to use for verifying
-verify_model_checkpoint: !ref <data_folder>/lightning_logs/version_5/checkpoints/epoch=28-step=6147.ckpt
+verify_model_checkpoint: !ref <data_folder>/lightning_logs/version_1/checkpoints/epoch=49-step=30099.ckpt
 # score_norm: 's-norm' # z-norm t-norm s-norm none
-cohort_size: 100 # should be lower than train size
-device: cuda:0
+cohort_size: 10 # should be lower than train size
+device: cpu
 # limit batch size with command line params, since embeddings are calculated from full length of audio
 # rtx2080 - verify.py --batch_size 8
