@@ -6,6 +6,7 @@ import pickle
 import time
 import csv
 import re
+import numpy as np
 from scipy.io import wavfile
 
 logger = logging.getLogger(__name__)
@@ -355,9 +356,9 @@ def load_audio(wav_file, num_frames=None, frame_offset=0, sr=None):
     if num_frames is None:
         num_frames = len(signal)
 
-    signal = signal[frame_offset:num_frames]
+    signal = signal[frame_offset:(frame_offset + num_frames)]
 
-    signal = signal / 32767.0
-    signal = signal.astype('float32')
-    signal = torch.tensor(signal)
+    # emulate torchaudio
+    signal = torch.tensor(np.array([(signal / 32767.0).astype('float32')]))
+
     return signal, sample_rate

@@ -1,6 +1,9 @@
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
+from VoxCelebDataset import VoxCelebDataset
+
+
 class VoxCelebLightningDataModule(pl.LightningDataModule):
     def __init__(self, hparams):
         super().__init__()
@@ -10,10 +13,10 @@ class VoxCelebLightningDataModule(pl.LightningDataModule):
 
         # assign to use in dataloaders
 
-        self.train_dataset = VoxCeleb2Dataset(hparams, hparams["train_data"])
-        self.val_dataset = VoxCeleb2Dataset(hparams, hparams["valid_data"])
-        self.test_dataset = VoxCeleb2Dataset(hparams, hparams["test_data"])
-        self.enrol_dataset = VoxCeleb2Dataset(hparams, hparams["enrol_data"])
+        self.train_dataset = VoxCelebDataset(hparams, hparams["train_data"])
+        self.val_dataset = VoxCelebDataset(hparams, hparams["valid_data"])
+        self.test_dataset = VoxCelebDataset(hparams, hparams["test_data"])
+        self.enrol_dataset = VoxCelebDataset(hparams, hparams["enrol_data"])
 
     """
     # Use this method to do things that might write to disk or that need to be done only from a single process in distributed settings.

@@ -3,6 +3,7 @@ import utils
 import random
 import logging
 import sys
+import json
 import numpy as np
 from utils import parse_arguments
 from hyperpyyaml import load_hyperpyyaml
@@ -67,7 +68,6 @@ class VoxCelebDataset(torch.utils.data.Dataset):
 
         num_frames = stop - start
         # Resulting Tensor and sample rate.
-        # If the input file has integer wav format and normalization is off, then it has integer type, else float32 type.
         sig, fs = utils.load_audio(wav, num_frames=num_frames, frame_offset=start)
         # sig, fs = torchaudio.load(wav, num_frames=num_frames, frame_offset=start)
         sig = sig.transpose(0, 1).squeeze(1)
@@ -96,7 +96,14 @@ def main():
 
     hparams = load_hyperpyyaml(hparam_str, overrides)
 
-    logging.info(f"Params: {hparams}")
+    logging.info(f"Params: {json.dumps(hparams, indent=4)}")
+
+    dataset = VoxCelebDataset(hparams, hparams["train_data"])
+    for idx in range(10):
+        x_wav, y, descr = dataset.__getitem__(idx)
+        print(f"x_wav: {x_wav}")
+        print(f"    y: {y}")
+        print(f"descr: {descr}")
 
 
 if __name__ == "__main__":

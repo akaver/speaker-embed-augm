@@ -60,7 +60,7 @@ amp_th: 0.0005 # 5e-04
 # dataloader options
 # batch size is dependent of augmentations and population size, every batch will be wavs*(1+augmentations_count)
 batch_size: 16
-number_of_epochs: 5
+number_of_epochs: 50
 num_workers: 6
 random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
 

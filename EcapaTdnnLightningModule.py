@@ -1,6 +1,19 @@
-class EcapaTdnnModule(pl.LightningModule):
+import logging
+from typing import Optional
+
+import torch
+import torch.nn.functional as F
+import pytorch_lightning as pl
+from torchmetrics.functional import accuracy
+import ECAPA_TDNN
+import augmentations
+
+logger = logging.getLogger(__name__)
+
+
+class EcapaTdnnLightningModule(pl.LightningModule):
     def __init__(self, hparams, out_neurons):
-        super(EcapaTdnnModule, self).__init__()
+        super().__init__()
 
         # naming conflict?
         self._hparams = hparams
@@ -33,10 +46,9 @@ class EcapaTdnnModule(pl.LightningModule):
     def prepare_data(self):
         pass
 
-    def setup(self, stage):
+    def setup(self, stage: Optional[str]) -> None:
         logger.info(f"Setup stage {stage}")
         self.stage = stage
-        pass
 
     # Use for inference only (separate from training_step)
     def forward(self, wavs):
@@ -44,15 +56,14 @@ class EcapaTdnnModule(pl.LightningModule):
 
         lens = torch.ones(wavs.shape[0])
 
-        wavs_aug_tot = []
-        wavs_aug_tot.append(wavs)
+        wavs_aug_tot = [wavs]
 
         self.n_augment = 1
 
         if self.stage == "fit":
             if "augmentations" in self._hparams:
                 for _, augmentation in enumerate(self.hparams['augmentations']):
-                    wavs_augmented = getattr(augment, augmentation)(wavs)
+                    wavs_augmented = getattr(augmentations, augmentation)(wavs)
 
                     # Managing speed change - ie lenght of audio was changed. cut down or pad
                     if wavs_augmented.shape[1] > wavs.shape[1]:
@@ -82,8 +93,8 @@ class EcapaTdnnModule(pl.LightningModule):
         features_normalized = self.mean_var_norm(features, lens)
 
         embedding = self.net(features_normalized)
-
         prediction = self.classifier(embedding)
+
         return prediction, embedding
 
     def get_embeddings(self, wavs):
@@ -99,7 +110,7 @@ class EcapaTdnnModule(pl.LightningModule):
         inputs, labels, ids = batch
         labels_predicted, embedding = self(inputs)  # calls forward
 
-        # multiple the labels by  appended augmentations count
+        # multiply the labels by  appended augmentations count
         if self.stage == 'fit':
             labels = torch.cat([labels] * self.n_augment, dim=0)
 
@@ -116,11 +127,11 @@ class EcapaTdnnModule(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss, acc = self.model_step(batch, batch_idx)
 
-        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
-        self.log('train_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log('train_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
-        self.log("ptl/train_loss", loss)
-        self.log("ptl/train_accuracy", acc)
+        self.log("ptl/train_loss", loss, sync_dist=True)
+        self.log("ptl/train_accuracy", acc, sync_dist=True)
 
         return {'loss': loss, 'acc': acc}
 
@@ -137,16 +148,16 @@ class EcapaTdnnModule(pl.LightningModule):
         avg_val_loss = torch.tensor([x['loss'] for x in val_step_outputs]).mean()
         avg_val_acc = torch.tensor([x['acc'] for x in val_step_outputs]).mean()
 
-        self.log('avg_val_loss', avg_val_loss, on_epoch=True, prog_bar=True, logger=True)
-        self.log('avg_val_acc', avg_val_acc, on_epoch=True, prog_bar=True, logger=True)
+        self.log('avg_val_loss', avg_val_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log('avg_val_acc', avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         # info for ray
-        self.log("ptl/val_loss", avg_val_loss, on_epoch=True, prog_bar=True, logger=True)
-        self.log("ptl/val_accuracy", avg_val_acc, on_epoch=True, prog_bar=True, logger=True)
+        self.log("ptl/val_loss", avg_val_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("ptl/val_accuracy", avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         # TODO, implement calculations on test set
-        self.log("ptl/EER", avg_val_acc + 1, on_epoch=True, prog_bar=True, logger=True)
-        self.log("ptl/minDCF", avg_val_acc + 2, on_epoch=True, prog_bar=True, logger=True)
+        self.log("ptl/EER", avg_val_acc + 1, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("ptl/minDCF", avg_val_acc + 2, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         logger.info(f"avg_val_loss: {avg_val_loss} avg_val_acc: {avg_val_acc}")
 
