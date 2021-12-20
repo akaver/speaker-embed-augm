@@ -28,7 +28,7 @@ test_pairs_out_file: !ref <data_folder>/verification.txt
 verification_file: !ref <data_folder>/verification.txt
 
 # number of unique speakers to use (before split)
-speaker_quantity: 25
+speaker_quantity: 250
 
 # number of random test pairs to use from verification_file
 test_pairs_quantity: 200
@@ -60,7 +60,7 @@ amp_th: 0.0005 # 5e-04
 # dataloader options
 # batch size is dependent of augmentations and population size, every batch will be wavs*(1+augmentations_count)
 batch_size: 16
-number_of_epochs: 5
+number_of_epochs: 50
 num_workers: 6
 random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
 
