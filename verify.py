@@ -203,6 +203,9 @@ def main():
 
     positive_scores, negative_scores = get_verification_scores(hparams, veri_test, enrol_dict, test_dict, train_dict)
 
+    # get rid of all the dicts from memory
+    del enrol_dict, test_dict, train_dict
+
     eer, th = ECAPA_TDNN.EER(torch.tensor(positive_scores), torch.tensor(negative_scores))
     logger.info("EER(%%)=%f", eer * 100)
 
