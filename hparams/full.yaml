@@ -1,0 +1,97 @@
+skip_prep: False
+
+seed: 1986
+
+base_folder: /state/partition1/data # /mnt/ml-stuff2 # /data in docker
+
+# generated data splits, checkpoints, etc
+data_folder: !ref <base_folder>/voxdata
+
+# voxceleb data folders will be scanned and all the found waves, id, lengths saved here
+# saves time on future runs
+voxceleb_file_info: !ref <data_folder>/file_info.pkl
+
+output_folder: !ref <data_folder>/results/<seed>
+save_folder: !ref <output_folder>/save
+
+
+# Folders for VoxCeleb1 and VoxCeleb2. Data needs to be pre-downloaded and converted into wav
+data_folder_voxceleb1: !ref <base_folder>/voxceleb1
+data_folder_voxceleb2: !ref <base_folder>/voxceleb2
+
+splits: [train, dev, test]
+
+test_pairs_in_file: !ref <base_folder>/voxceleb1/list_test_all2.txt
+# random verification pairs to use from input file. Remove/set to None for full
+test_pairs_out_file: !ref <data_folder>/verification.txt
+
+verification_file: !ref <data_folder>/verification.txt
+
+# number of unique speakers to use (before split)
+# speaker_quantity: 2500
+
+# number of random test pairs to use from verification_file
+# test_pairs_quantity: 200
+
+# how should data be split between train/valid
+split_ratio: 90
+
+train_data: !ref <data_folder>/train.csv
+valid_data: !ref <data_folder>/valid.csv
+
+# Data files for verification after training. Speakers here will not be included in train/valid split
+# enrol and test utterances data is created based on verification_file
+enrol_data: !ref <data_folder>/enrol.csv
+test_data: !ref <data_folder>/test.csv
+
+# Folder to extract data augmentation files
+rir_folder: !ref <base_folder>/rirs_noises
+
+# Feature parameters
+n_mels: 80
+left_frames: 0
+right_frames: 0
+deltas: False # delta and delta-delta
+
+sample_rate: 16000
+sentence_len: 3.0 # in seconds
+amp_th: 0.0005 # 5e-04
+
+# dataloader options
+# batch size is dependent of augmentations and population size, every batch will be wavs*(1+augmentations_count)
+batch_size: 512
+number_of_epochs: 10
+num_workers: 6
+random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
+
+
+# uniform distribution, how many aug functions to apply on every epoch
+augmentations_min: 0
+augmentations_max: 1
+
+concat_augment: True # makes batch bigger (no of augmentation applied)+1 times, watch GPU Memory and batch size
+
+# list of aug functions to choose from
+augmentation_functions: [
+  add_background_noise_white_noise_20db,
+  change_volume_up_20db,
+  change_volume_down_20db,
+  clicks_every_half_second_10db,
+  pitch_shift_up_2_steps,
+  pitch_shift_down_2_steps,
+  reverb,
+  speed_up_10,
+  speed_down_10,
+  time_stretch_up_10,
+  time_stretch_down_10,
+]
+
+# PBA params, on RTX2080
+population_size: 2
+resources_per_trial_cpu: 2
+resources_per_trial_gpu: 0.40
+population_synch: True
+population_quantile_fraction: 0.3 # top x% models copied over to bottom x% models
+population_metric: mean_accuracy
+population_mode: max
+
