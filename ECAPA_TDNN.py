@@ -2411,8 +2411,8 @@ def EER(positive_scores, negative_scores):
     #positive_scores = torch.cat(
     #    len(thresholds) * [positive_scores.unsqueeze(0)]
     #)
-    positive_scores = len(thresholds) * [positive_scores.unsqueeze(0)]
-    positive_scores = torch.cat(positive_scores)
+
+    positive_scores = positive_scores.unsqueeze(0).tile((len(thresholds),1))
 
     pos_scores_threshold = positive_scores.transpose(0, 1) <= thresholds
     FRR = (pos_scores_threshold.sum(0)).float() / positive_scores.shape[1]
@@ -2420,9 +2420,11 @@ def EER(positive_scores, negative_scores):
     del pos_scores_threshold
 
     # Computing False Acceptance Rate (false alarm)
-    negative_scores = torch.cat(
-        len(thresholds) * [negative_scores.unsqueeze(0)]
-    )
+    # negative_scores = torch.cat(
+    #    len(thresholds) * [negative_scores.unsqueeze(0)]
+    # )
+    negative_scores = negative_scores.unsqueeze(0).tile((len(thresholds),1))
+
     neg_scores_threshold = negative_scores.transpose(0, 1) > thresholds
     FAR = (neg_scores_threshold.sum(0)).float() / negative_scores.shape[1]
     del negative_scores
