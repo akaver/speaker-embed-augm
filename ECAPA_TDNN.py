@@ -2416,6 +2416,8 @@ def EER(positive_scores, negative_scores):
 
     pos_scores_threshold = positive_scores.transpose(0, 1) <= thresholds
     FRR = (pos_scores_threshold.sum(0)).float() / positive_scores.shape[1]
+
+
     del positive_scores
     del pos_scores_threshold
 
@@ -2427,6 +2429,8 @@ def EER(positive_scores, negative_scores):
 
     neg_scores_threshold = negative_scores.transpose(0, 1) > thresholds
     FAR = (neg_scores_threshold.sum(0)).float() / negative_scores.shape[1]
+
+
     del negative_scores
     del neg_scores_threshold
 

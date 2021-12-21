@@ -6,6 +6,7 @@ import os
 import sys
 import torch
 import logging
+import numpy as np
 
 from EcapaTdnnLightningModule import EcapaTdnnLightningModule
 from VoxCelebLightningDataModule import VoxCelebLightningDataModule
@@ -40,6 +41,7 @@ def get_verification_scores(hparams, veri_test, enrol_dict, test_dict, train_dic
     scores = []
     positive_scores = []
     negative_scores = []
+    full_scores = []
 
     save_file = os.path.join(hparams["data_folder"], "scores.txt")
     if os.path.exists(save_file):
@@ -108,13 +110,47 @@ def get_verification_scores(hparams, veri_test, enrol_dict, test_dict, train_dic
         s_file.write("%s %s %i %f\n" % (enrol_id, test_id, lab_pair, score))
         scores.append(score)
 
+        full_scores.append((score.item(), lab_pair))
+
         if lab_pair == 1:
             positive_scores.append(score)
         else:
             negative_scores.append(score)
 
     s_file.close()
-    return positive_scores, negative_scores
+    return positive_scores, negative_scores, full_scores
+
+
+def EER2(scores):
+    scores = sorted(scores)  # min->max
+    sort_score = np.matrix(scores)
+    minIndex = 9223372036854775807
+    minDis = 9223372036854775807
+    minTh = 9223372036854775807
+    alltrue = sort_score.sum(0)[0, 1]
+    allfalse = len(scores) - alltrue
+    eer = 9223372036854775807
+    fa = allfalse
+    miss = 0
+
+    for i in range(0, len(scores)):
+        # min -> max
+        if sort_score[i, 1] == 1:
+            miss += 1
+        else:
+            fa -= 1
+
+        fa_rate = float(fa) / allfalse
+        miss_rate = float(miss) / alltrue
+
+        if abs(fa_rate - miss_rate) < minDis:
+            minDis = abs(fa_rate - miss_rate)
+            eer = max(fa_rate, miss_rate)
+            minIndex = i
+            minTh = sort_score[i, 0]
+
+    return eer, minTh
+
 
 
 def main():
@@ -201,18 +237,22 @@ def main():
         veri_test = [line.rstrip() for line in f]
     logger.info(f"Test pairs {len(veri_test)}")
 
-    positive_scores, negative_scores = get_verification_scores(hparams, veri_test, enrol_dict, test_dict, train_dict)
+    positive_scores, negative_scores, full_scores = get_verification_scores(hparams, veri_test, enrol_dict, test_dict, train_dict)
 
     # get rid of all the dicts from memory
     del enrol_dict, test_dict, train_dict
 
-    eer, th = ECAPA_TDNN.EER(torch.tensor(positive_scores), torch.tensor(negative_scores))
-    logger.info("EER(%%)=%f", eer * 100)
+    # eer, th = ECAPA_TDNN.EER(torch.tensor(positive_scores), torch.tensor(negative_scores))
+    # logger.info("EER(%%)=%f", eer * 100)
 
-    min_dcf, th = ECAPA_TDNN.minDCF(
-        torch.tensor(positive_scores), torch.tensor(negative_scores)
-    )
-    logger.info("minDCF=%f", min_dcf * 100)
+
+    eer2, th = EER2(full_scores)
+    logger.info("EER2(%%)=%f", eer2 * 100)
+
+    #min_dcf, th = ECAPA_TDNN.minDCF(
+    #    torch.tensor(positive_scores), torch.tensor(negative_scores)
+    #)
+    #logger.info("minDCF=%f", min_dcf * 100)
 
 
 if __name__ == "__main__":
