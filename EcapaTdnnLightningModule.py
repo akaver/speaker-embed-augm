@@ -54,7 +54,7 @@ class EcapaTdnnLightningModule(pl.LightningModule):
     def forward(self, wavs):
         # wavs is batch of tensors with audio
 
-        lengths = torch.ones(wavs.shape[0])
+        lengths = torch.ones(wavs.shape[0], device=self.device)
 
         wavs_aug_tot = [wavs]
 
