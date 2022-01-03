@@ -69,7 +69,7 @@ class EcapaTdnnLightningModule(pl.LightningModule):
                     # Managing speed change - ie lenght of audio was changed. cut down or pad
                     if wavs_augmented.shape[1] > wavs.shape[1]:
                         wavs_augmented = wavs_augmented[:, 0: wavs.shape[1]]
-                    else:
+                    elif wavs_augmented.shape[1] < wavs.shape[1]:
                         zero_sig = torch.zeros_like(wavs)
                         zero_sig[:, 0: wavs_augmented.shape[1]] = wavs_augmented
                         wavs_augmented = zero_sig
