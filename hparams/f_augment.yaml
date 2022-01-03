@@ -1,4 +1,4 @@
-rir_folder: !ref <base_folder> # Change it if needed
+rir_folder: !ref <base_folder>
 
 augmentation_functions: [
   augment_wavedrop,

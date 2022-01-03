@@ -4334,9 +4334,9 @@ Convert object based augmentations into functions
 """
 f_augment_wavedrop = TimeDomainSpecAugment(sample_rate=16000, speeds=[100])
 f_augment_speed = TimeDomainSpecAugment(sample_rate=16000, speeds=[95, 100, 105])
-f_add_rev = EnvCorrupt(openrir_folder="/Users/akaver/data", openrir_max_noise_len=3.0, reverb_prob=1.0, noise_prob=0.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
-f_add_noise = EnvCorrupt(openrir_folder="/Users/akaver/data", openrir_max_noise_len=3.0, reverb_prob=0.0, noise_prob=1.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
-f_add_rev_noise = EnvCorrupt(openrir_folder="/Users/akaver/data", openrir_max_noise_len=3.0, reverb_prob=1.0, noise_prob=1.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
+f_add_rev = EnvCorrupt(openrir_folder="/state/partition1/data", openrir_max_noise_len=3.0, reverb_prob=1.0, noise_prob=0.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
+f_add_noise = EnvCorrupt(openrir_folder="/state/partition1/data", openrir_max_noise_len=3.0, reverb_prob=0.0, noise_prob=1.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
+f_add_rev_noise = EnvCorrupt(openrir_folder="/state/partition1/data", openrir_max_noise_len=3.0, reverb_prob=1.0, noise_prob=1.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
 
 
 def augment_wavedrop(audio, lengths, sample_rate=16000):
