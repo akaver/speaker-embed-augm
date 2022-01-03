@@ -2,7 +2,7 @@ rir_folder: !ref <base_folder>
 
 augmentation_functions: [
   augment_wavedrop,
-  augment_speed,
+#  augment_speed,
 #  add_rev,
 #  add_noise,
 #  add_rev_noise
