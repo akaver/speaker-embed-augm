@@ -54,16 +54,17 @@ class EcapaTdnnLightningModule(pl.LightningModule):
     def forward(self, wavs):
         # wavs is batch of tensors with audio
 
-        lens = torch.ones(wavs.shape[0])
+        lengths = torch.ones(wavs.shape[0])
 
         wavs_aug_tot = [wavs]
 
         self.n_augment = 1
 
         if self.stage == "fit":
-            if "augmentations" in self._hparams:
-                for _, augmentation in enumerate(self.hparams['augmentations']):
-                    wavs_augmented = getattr(augmentations, augmentation)(wavs)
+            if "augmentation_functions" in self._hparams:
+                for _, augmentation in enumerate(self._hparams['augmentation_functions']):
+                    wavs_augmented = getattr(augmentations, augmentation)(wavs, lengths)
+                    # wavs_augmented = augmentation(wavs, lengths)
 
                     # Managing speed change - ie lenght of audio was changed. cut down or pad
                     if wavs_augmented.shape[1] > wavs.shape[1]:
@@ -73,7 +74,7 @@ class EcapaTdnnLightningModule(pl.LightningModule):
                         zero_sig[:, 0: wavs_augmented.shape[1]] = wavs_augmented
                         wavs_augmented = zero_sig
 
-                    if "concat_augment" in self.hparams and self.hparams["concat_augment"]:
+                    if "concat_augment" in self._hparams and self._hparams["concat_augment"]:
                         # collect the augmentations
                         wavs_aug_tot.append(wavs_augmented)
                     else:
@@ -84,13 +85,13 @@ class EcapaTdnnLightningModule(pl.LightningModule):
             wavs = torch.cat(wavs_aug_tot, dim=0)
             self.n_augment = len(wavs_aug_tot)
 
-        lens = torch.cat([lens] * self.n_augment)
+        lengths = torch.cat([lengths] * self.n_augment)
 
         # extract features - filterbanks from mfcc
         features = self.compute_features(wavs)
 
         # normalize
-        features_normalized = self.mean_var_norm(features, lens)
+        features_normalized = self.mean_var_norm(features, lengths)
 
         embedding = self.net(features_normalized)
         prediction = self.classifier(embedding)

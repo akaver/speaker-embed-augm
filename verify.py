@@ -124,13 +124,12 @@ def get_verification_scores(hparams, veri_test, enrol_dict, test_dict, train_dic
 def EER2(scores):
     scores = sorted(scores)  # min->max
     sort_score = np.matrix(scores)
-    minIndex = 9223372036854775807
-    minDis = 9223372036854775807
-    minTh = 9223372036854775807
-    alltrue = sort_score.sum(0)[0, 1]
-    allfalse = len(scores) - alltrue
+    min_dis = 9223372036854775807
+    min_th = 9223372036854775807
+    all_true = sort_score.sum(0)[0, 1]
+    all_false = len(scores) - all_true
     eer = 9223372036854775807
-    fa = allfalse
+    fa = all_false
     miss = 0
 
     for i in range(0, len(scores)):
@@ -140,17 +139,15 @@ def EER2(scores):
         else:
             fa -= 1
 
-        fa_rate = float(fa) / allfalse
-        miss_rate = float(miss) / alltrue
+        fa_rate = float(fa) / all_false
+        miss_rate = float(miss) / all_true
 
-        if abs(fa_rate - miss_rate) < minDis:
-            minDis = abs(fa_rate - miss_rate)
+        if abs(fa_rate - miss_rate) < min_dis:
+            min_dis = abs(fa_rate - miss_rate)
             eer = max(fa_rate, miss_rate)
-            minIndex = i
-            minTh = sort_score[i, 0]
+            min_th = sort_score[i, 0]
 
-    return eer, minTh
-
+    return eer, min_th
 
 
 def main():
@@ -244,7 +241,6 @@ def main():
 
     # eer, th = ECAPA_TDNN.EER(torch.tensor(positive_scores), torch.tensor(negative_scores))
     # logger.info("EER(%%)=%f", eer * 100)
-
 
     eer2, th = EER2(full_scores)
     logger.info("EER2(%%)=%f", eer2 * 100)

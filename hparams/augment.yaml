@@ -1,0 +1,48 @@
+# Folder to extract data augmentation files
+rir_folder: !ref <base_folder> # Change it if needed
+
+augment_wavedrop: !new:augmentations.TimeDomainSpecAugment
+    sample_rate: !ref <sample_rate>
+    speeds: [100]
+
+augment_speed: !new:augmentations.TimeDomainSpecAugment
+    sample_rate: !ref <sample_rate>
+    speeds: [95, 100, 105]
+
+add_rev: !new:augmentations.EnvCorrupt
+    openrir_folder: !ref <rir_folder>
+    openrir_max_noise_len: 3.0  # seconds
+    reverb_prob: 1.0
+    noise_prob: 0.0
+    noise_snr_low: 0
+    noise_snr_high: 15
+    rir_scale_factor: 1.0
+
+add_noise: !new:augmentations.EnvCorrupt
+    openrir_folder: !ref <rir_folder>
+    openrir_max_noise_len: 3.0  # seconds
+    reverb_prob: 0.0
+    noise_prob: 1.0
+    noise_snr_low: 0
+    noise_snr_high: 15
+    rir_scale_factor: 1.0
+
+add_rev_noise: !new:augmentations.EnvCorrupt
+    openrir_folder: !ref <rir_folder>
+    openrir_max_noise_len: 3.0  # seconds
+    reverb_prob: 1.0
+    noise_prob: 1.0
+    noise_snr_low: 0
+    noise_snr_high: 15
+    rir_scale_factor: 1.0
+
+augment_pipeline: [
+    !ref <augment_wavedrop>,
+    !ref <augment_speed>,
+    !ref <add_rev>,
+    !ref <add_noise>,
+    !ref <add_rev_noise>
+]
+
+concat_augment: True
+

@@ -44,9 +44,6 @@ valid_data: !ref <data_folder>/valid.csv
 enrol_data: !ref <data_folder>/enrol.csv
 test_data: !ref <data_folder>/test.csv
 
-# Folder to extract data augmentation files
-rir_folder: !ref <base_folder>/rirs_noises
-
 # Feature parameters
 n_mels: 80
 left_frames: 0
@@ -64,27 +61,6 @@ number_of_epochs: 10
 num_workers: 6
 random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
 
-
-# uniform distribution, how many aug functions to apply on every epoch
-augmentations_min: 0
-augmentations_max: 1
-
-concat_augment: True # makes batch bigger (no of augmentation applied)+1 times, watch GPU Memory and batch size
-
-# list of aug functions to choose from
-augmentation_functions: [
-  add_background_noise_white_noise_20db,
-  change_volume_up_20db,
-  change_volume_down_20db,
-  clicks_every_half_second_10db,
-  pitch_shift_up_2_steps,
-  pitch_shift_down_2_steps,
-  reverb,
-  speed_up_10,
-  speed_down_10,
-  time_stretch_up_10,
-  time_stretch_down_10,
-]
 
 # PBA params, on RTX2080
 population_size: 2

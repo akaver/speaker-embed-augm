@@ -45,11 +45,11 @@ def main():
 
     trainer = pl.Trainer(
         default_root_dir=hparams["data_folder"],
-        gpus= -1 if torch.cuda.device_count() > 0 else 0,
+        gpus=-1 if torch.cuda.device_count() > 0 else 0,
         max_epochs=hparams["number_of_epochs"],
-        # num_sanity_val_steps=0
-        accelerator='ddp',
-        plugins=DDPPlugin(find_unused_parameters=False)
+        # num_sanity_val_steps=0,
+        strategy='ddp',
+        # plugins=DDPPlugin(find_unused_parameters=False)
     )
 
     trainer.fit(model, data)
