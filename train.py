@@ -1,7 +1,5 @@
 global OPENRIR_FOLDER
-
 OPENRIR_FOLDER = ""
-
 import sys
 import logging
 import torch

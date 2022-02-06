@@ -1,3 +1,5 @@
+# conf for running on Macbook Pro M1 Max, 64gb ram
+
 skip_prep: False
 
 seed: 1986

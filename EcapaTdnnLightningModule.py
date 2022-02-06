@@ -105,7 +105,6 @@ class EcapaTdnnLightningModule(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001, weight_decay=0.000002)
         return optimizer
-        pass
 
     def model_step(self, batch, batch_idx):
         inputs, labels, ids = batch
@@ -121,24 +120,31 @@ class EcapaTdnnLightningModule(pl.LightningModule):
         labels_squeezed = labels.squeeze()
 
         labels_hot_encoded = F.one_hot(labels_squeezed.long(), labels_predicted_squeezed.shape[1])
-        acc = accuracy(labels_predicted_squeezed, labels_hot_encoded)
 
-        return loss, acc
+        # subset_accuracy=True
+        # acc = accuracy(labels_predicted_squeezed, labels_hot_encoded)
+
+        # return loss, acc
+        return loss
 
     def training_step(self, batch, batch_idx):
-        loss, acc = self.model_step(batch, batch_idx)
+        # loss, acc = self.model_step(batch, batch_idx)
+        loss = self.model_step(batch, batch_idx)
 
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        self.log('train_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        # self.log('train_acc', acc, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         self.log("ptl/train_loss", loss, sync_dist=True)
-        self.log("ptl/train_accuracy", acc, sync_dist=True)
+        # self.log("ptl/train_accuracy", acc, sync_dist=True)
 
-        return {'loss': loss, 'acc': acc}
+        # return {'loss': loss, 'acc': acc}
+        return {'loss': loss}
 
     def validation_step(self, batch, batch_idx):
-        loss, acc = self.model_step(batch, batch_idx)
-        return {'loss': loss, 'acc': acc}
+        # loss, acc = self.model_step(batch, batch_idx)
+        # return {'loss': loss, 'acc': acc}
+        loss = self.model_step(batch, batch_idx)
+        return {'loss': loss}
 
     def test_step(self, batch, batch_idx):
         # return Union[Tensor, Dict[str, Any], None]
@@ -147,20 +153,21 @@ class EcapaTdnnLightningModule(pl.LightningModule):
     # Called at the end of the validation epoch with the outputs of all validation steps.
     def validation_epoch_end(self, val_step_outputs):
         avg_val_loss = torch.tensor([x['loss'] for x in val_step_outputs]).mean()
-        avg_val_acc = torch.tensor([x['acc'] for x in val_step_outputs]).mean()
+        # avg_val_acc = torch.tensor([x['acc'] for x in val_step_outputs]).mean()
 
         self.log('avg_val_loss', avg_val_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        self.log('avg_val_acc', avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        # self.log('avg_val_acc', avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         # info for ray
         self.log("ptl/val_loss", avg_val_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        self.log("ptl/val_accuracy", avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        # self.log("ptl/val_accuracy", avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         # TODO, implement calculations on test set
-        self.log("ptl/EER", avg_val_acc + 1, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        self.log("ptl/minDCF", avg_val_acc + 2, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        # self.log("ptl/EER", avg_val_acc + 1, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        # self.log("ptl/minDCF", avg_val_acc + 2, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
-        logger.info(f"avg_val_loss: {avg_val_loss} avg_val_acc: {avg_val_acc}")
+        # logger.info(f"avg_val_loss: {avg_val_loss} avg_val_acc: {avg_val_acc}")
+        logger.info(f"avg_val_loss: {avg_val_loss}")
 
         return {'val_loss': avg_val_loss}
 

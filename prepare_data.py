@@ -40,6 +40,18 @@ def prepare_voxceleb(hparams):
             logger.error(f"Data folder ({data_folder}) creation failed, returning.")
             return
 
+    if "voxceleb_file_info_folder" not in hparams:
+        sys.exit("voxceleb_file_info_folder is missing in params")
+    voxceleb_file_info_folder = hparams["voxceleb_file_info_folder"]
+
+    if not os.path.exists(voxceleb_file_info_folder):
+        logger.info(f"Data folder not found, creating dir '{voxceleb_file_info_folder}'")
+        os.makedirs(voxceleb_file_info_folder)
+        if not os.path.exists(voxceleb_file_info_folder):
+            logger.error(f"Data folder ({voxceleb_file_info_folder}) creation failed, returning.")
+            return
+
+
     logger.info("Creating csv file for the VoxCeleb Dataset..")
 
     # Split data into train and validation (verification split)
@@ -91,6 +103,10 @@ def _get_utterance_split_lists(hparams):
     speaker_quantity = None
     if "speaker_quantity" in hparams:
         speaker_quantity = hparams["speaker_quantity"]
+
+    utterance_quantity = None
+    if "utterance_quantity" in hparams:
+        utterance_quantity = hparams["utterance_quantity"]
 
     split_ratio = 90
     if "split_ratio" in hparams:
@@ -153,6 +169,12 @@ def _get_utterance_split_lists(hparams):
     full_lst = []
     for spk_id in spk_id_list:
         full_lst.extend(audio_files_dict[spk_id])
+
+    if utterance_quantity is not None:
+        logger.warning(f"Using only {utterance_quantity} utterances out of {len(full_lst)}")
+        random.shuffle(full_lst)
+        full_lst = random.sample(full_lst, utterance_quantity)
+
     logger.info(f"Audio samples {len(full_lst)}")
 
     test_size_split = 1 - 0.01 * split_ratio

@@ -1,20 +1,21 @@
-# conf for running on ML server 8xA100
+# conf for running on single RTX3090
 
 skip_prep: False
 
 seed: 1986
 
-base_folder: /state/partition1/data # /mnt/ml-stuff2 # /data in docker
+base_folder: /data
 
 # generated data splits, checkpoints, etc
-data_folder: !ref <base_folder>/voxdata
+data_folder: !ref <base_folder>/voxdata100
+
 
 openrir_folder: !ref <base_folder>
 
-
 # voxceleb data folders will be scanned and all the found waves, id, lengths saved here
 # saves time on future runs
-voxceleb_file_info: !ref <data_folder>/file_info.pkl
+voxceleb_file_info_folder: !ref <base_folder>/voxdatainfo/
+voxceleb_file_info: !ref <voxceleb_file_info_folder>/file_info.pkl
 
 output_folder: !ref <data_folder>/results/<seed>
 save_folder: !ref <output_folder>/save
@@ -33,10 +34,14 @@ test_pairs_out_file: !ref <data_folder>/verification.txt
 verification_file: !ref <data_folder>/verification.txt
 
 # number of unique speakers to use (before split)
-# speaker_quantity: 2500
+# ca 10% of speakers from voxceleb2
+#speaker_quantity: 100
+
+# limit the number of utterances used after first limiting speakers
+utterance_quantity: 20000
 
 # number of random test pairs to use from verification_file
-# test_pairs_quantity: 200
+test_pairs_quantity: 400
 
 # how should data be split between train/valid
 split_ratio: 90
@@ -61,13 +66,13 @@ amp_th: 0.0005 # 5e-04
 
 # dataloader options
 # batch size is dependent of augmentations and population size, every batch will be wavs*(1+augmentations_count)
-batch_size: 64 #512 with no aug
+batch_size: 64
 number_of_epochs: 10
 num_workers: 6
 random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
 
 
-# PBA params, on RTX2080
+# PBA params, on M1 Max
 population_size: 2
 resources_per_trial_cpu: 2
 resources_per_trial_gpu: 0.40
