@@ -1,3 +1,7 @@
+global OPENRIR_FOLDER
+
+OPENRIR_FOLDER = ""
+
 import sys
 import logging
 import torch
@@ -15,6 +19,9 @@ logger = logging.getLogger(__name__)
 def main():
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     logger.info("Starting...")
+
+    global OPENRIR_FOLDER
+
 
     # enable the inbuilt cudnn auto-tuner
     torch.backends.cudnn.benchmark = True
@@ -37,6 +44,8 @@ def main():
 
     # =============================== Pytorch Lightning ====================================
 
+    OPENRIR_FOLDER = hparams["openrir_folder"]
+
     data = VoxCelebLightningDataModule(hparams)
 
     logger.info(f"Speakers found {data.get_label_count()}")
@@ -57,4 +66,5 @@ def main():
 
 
 if __name__ == '__main__':
+
     main()

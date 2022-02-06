@@ -7,6 +7,9 @@ base_folder: /state/partition1/data # /mnt/ml-stuff2 # /data in docker
 # generated data splits, checkpoints, etc
 data_folder: !ref <base_folder>/voxdata
 
+openrir_folder: !ref <base_folder>
+
+
 # voxceleb data folders will be scanned and all the found waves, id, lengths saved here
 # saves time on future runs
 voxceleb_file_info: !ref <data_folder>/file_info.pkl
