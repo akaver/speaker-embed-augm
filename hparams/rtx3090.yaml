@@ -38,7 +38,7 @@ verification_file: !ref <data_folder>/verification.txt
 #speaker_quantity: 100
 
 # limit the number of utterances used after first limiting speakers
-utterance_quantity: 20000
+utterance_quantity: 10000
 
 # number of random test pairs to use from verification_file
 test_pairs_quantity: 400
@@ -66,7 +66,7 @@ amp_th: 0.0005 # 5e-04
 
 # dataloader options
 # batch size is dependent of augmentations and population size, every batch will be wavs*(1+augmentations_count)
-batch_size: 64
+batch_size: 24
 number_of_epochs: 10
 num_workers: 6
 random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
@@ -78,6 +78,6 @@ resources_per_trial_cpu: 2
 resources_per_trial_gpu: 0.40
 population_synch: True
 population_quantile_fraction: 0.3 # top x% models copied over to bottom x% models
-population_metric: mean_accuracy
-population_mode: max
+population_metric: mean_loss
+population_mode: min
 

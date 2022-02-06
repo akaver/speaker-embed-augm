@@ -61,9 +61,9 @@ class EcapaTdnnLightningModule(pl.LightningModule):
         self.n_augment = 1
 
         if self.stage == "fit":
-            if "augmentation_functions" in self._hparams:
-                for _, augmentation in enumerate(self._hparams['augmentation_functions']):
-                    wavs_augmented = getattr(augmentations, augmentation)(wavs, lengths)
+            if "augmentations" in self._hparams:
+                for _, (aug_function, prob) in enumerate(self._hparams['augmentations']):
+                    wavs_augmented = getattr(augmentations, aug_function)(wavs, lengths, probability=prob)
                     # wavs_augmented = augmentation(wavs, lengths)
 
                     # Managing speed change - ie lenght of audio was changed. cut down or pad

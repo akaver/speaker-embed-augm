@@ -4344,21 +4344,31 @@ f_add_noise = EnvCorrupt(openrir_folder=OPENRIR_FOLDER, openrir_max_noise_len=3.
 f_add_rev_noise = EnvCorrupt(openrir_folder=OPENRIR_FOLDER, openrir_max_noise_len=3.0, reverb_prob=1.0, noise_prob=1.0, noise_snr_low=0, noise_snr_high=15, rir_scale_factor=1.0)
 
 
-def augment_wavedrop(audio, lengths, sample_rate=16000):
+def augment_wavedrop(audio, lengths, probability=1, sample_rate=16000):
+    if probability < 0.5:
+        return audio
     return f_augment_wavedrop(audio, lengths)
 
 
-def augment_speed(audio, lengths, sample_rate=16000):
+def augment_speed(audio, lengths, probability=1,  sample_rate=16000):
+    if probability < 0.5:
+        return audio
     return f_augment_speed(audio, lengths)
 
 
-def add_rev(audio, lengths, sample_rate=16000):
+def add_rev(audio, lengths, probability=1,  sample_rate=16000):
+    if probability < 0.5:
+        return audio
     return f_add_rev(audio, lengths)
 
 
-def add_noise(audio, lengths, sample_rate=16000):
+def add_noise(audio, lengths, probability=1,  sample_rate=16000):
+    if probability < 0.5:
+        return audio
     return f_add_noise(audio, lengths)
 
 
-def add_rev_noise(audio, lengths, sample_rate=16000):
+def add_rev_noise(audio, lengths, probability=1,  sample_rate=16000):
+    if probability < 0.5:
+        return audio
     return f_add_rev_noise(audio, lengths)

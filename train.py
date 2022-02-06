@@ -20,7 +20,6 @@ def main():
 
     global OPENRIR_FOLDER
 
-
     # enable the inbuilt cudnn auto-tuner
     torch.backends.cudnn.benchmark = True
 
