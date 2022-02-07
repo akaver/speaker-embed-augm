@@ -56,7 +56,7 @@ def train_tune_checkpoint(
     trainer = Trainer(
         max_epochs=num_epochs,
         # If fractional GPUs passed in, convert to int.
-        # gpus=math.ceil(num_gpus),
+        gpus=math.ceil(num_gpus),
         logger=TensorBoardLogger(save_dir=tune.get_trial_dir(), name="", version="."),
         progress_bar_refresh_rate=0,
         num_sanity_val_steps=0,
@@ -70,7 +70,7 @@ def train_tune_checkpoint(
             ),
             progress_bar
         ],
-        plugins=[ray_plugin]
+        # plugins=[ray_plugin]
     )
 
     if checkpoint_dir:
@@ -126,7 +126,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
             train_tune_checkpoint,
             num_gpus=gpus_per_trial),
         resources_per_trial={
-            "cpu": cpus_per_trial,
+            "cpu": 1,
             "gpu": gpus_per_trial
         },
         metric="loss",
