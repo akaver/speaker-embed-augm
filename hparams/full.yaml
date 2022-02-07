@@ -67,12 +67,15 @@ num_workers: 6
 random_chunk: True # instead of fixed splits from every audio sample, pick random slice of correct len
 
 
-# PBA params, on RTX2080
-population_size: 2
-resources_per_trial_cpu: 2
-resources_per_trial_gpu: 0.40
+# PBA params, on AMP 8*A100
+# how many members in population
+population_size: 16
+# how many cpu_count/X use for every population member
+resources_per_trial_cpu_divider: 2
+# how many gpu_count/X use for every population member 1GPU / 2 = 0.5 - 2 parallel population members
+resources_per_trial_gpu_divider: 16
+max_training_iterations: 20
 population_synch: True
-population_quantile_fraction: 0.3 # top x% models copied over to bottom x% models
-population_metric: mean_accuracy
-population_mode: max
+population_quantile_fraction: 0.25 # top x% models copied over to bottom x% models
+
 

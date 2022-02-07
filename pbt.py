@@ -97,7 +97,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
         custom_explore_fn=explore,
         log_config=True,
         require_attrs=True,
-        quantile_fraction=0.25 # % of top performes used
+        quantile_fraction=conf['population_quantile_fraction'] # % of top performes used
     )
 
     progress_reporter = CLIReporter(

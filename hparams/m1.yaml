@@ -74,5 +74,5 @@ resources_per_trial_gpu: 0.40
 population_synch: True
 population_quantile_fraction: 0.3 # top x% models copied over to bottom x% models
 population_metric: mean_accuracy
-population_mode: max
+population_mode: min
 
