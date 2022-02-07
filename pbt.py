@@ -1,3 +1,5 @@
+from ray.util.ray_lightning import RayPlugin
+
 global OPENRIR_FOLDER
 OPENRIR_FOLDER = ""
 import os
@@ -49,6 +51,8 @@ def train_tune_checkpoint(
 
     logger.info(f"Speakers found {data.get_label_count()}")
 
+    ray_plugin = RayPlugin(num_workers=1, num_cpus_per_worker=1, use_gpu=True)
+
     trainer = Trainer(
         max_epochs=num_epochs,
         # If fractional GPUs passed in, convert to int.
@@ -65,7 +69,8 @@ def train_tune_checkpoint(
                 on="validation_end"
             ),
             progress_bar
-        ]
+        ],
+        plugins=[ray_plugin]
     )
 
     if checkpoint_dir:
