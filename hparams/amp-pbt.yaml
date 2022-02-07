@@ -77,7 +77,7 @@ population_size: 16
 # how many cpu_count/X use for every population member
 resources_per_trial_cpu_divider: 2
 # how many gpu_count/X use for every population member 1GPU / 2 = 0.5 - 2 parallel population members
-resources_per_trial_gpu_divider: 12
+resources_per_trial_gpu_divider: 8
 max_training_iterations: 20
 population_synch: True
 population_quantile_fraction: 0.25 # top x% models copied over to bottom x% models
