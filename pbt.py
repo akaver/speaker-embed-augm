@@ -124,7 +124,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
             "cpu": cpus_per_trial,
             "gpu": gpus_per_trial
         },
-        metric="ptl/val_loss",
+        metric="loss",
         mode="min",
         config=conf,
         num_samples=num_samples,
@@ -176,8 +176,12 @@ def main():
 
     start_time = pc()
 
-    analysis = tune_pbt(num_samples=8, training_iteration=10, cpus_per_trial=cpu_count/10,
-                        gpus_per_trial=gpu_count / 2, conf=hparams)
+    analysis = tune_pbt(
+        num_samples=hparams['population_size'],
+        training_iteration=hparams['max_training_iterations'],
+        cpus_per_trial=cpu_count/hparams['resources_per_trial_cpu_divider'],
+        gpus_per_trial=gpu_count/hparams['resources_per_trial_gpu_divider'],
+        conf=hparams)
 
     analysis.best_config
     analysis.results

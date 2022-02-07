@@ -159,7 +159,7 @@ class EcapaTdnnLightningModule(pl.LightningModule):
         # self.log('avg_val_acc', avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         # info for ray
-        self.log("ptl/val_loss", avg_val_loss, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log("ptl/val_loss", avg_val_loss)
         # self.log("ptl/val_accuracy", avg_val_acc, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
 
         # TODO, implement calculations on test set
@@ -169,7 +169,7 @@ class EcapaTdnnLightningModule(pl.LightningModule):
         # logger.info(f"avg_val_loss: {avg_val_loss} avg_val_acc: {avg_val_acc}")
         logger.info(f"avg_val_loss: {avg_val_loss}")
 
-        return {'val_loss': avg_val_loss}
+        # return {'val_loss': avg_val_loss}
 
     def on_train_start(self) -> None:
         print(f"on_train_start{self.stage}")

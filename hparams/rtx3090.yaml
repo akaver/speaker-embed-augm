@@ -73,11 +73,15 @@ random_chunk: True # instead of fixed splits from every audio sample, pick rando
 
 
 # PBA params, on M1 Max
+# how many members in population
 population_size: 2
-resources_per_trial_cpu: 2
-resources_per_trial_gpu: 0.40
+# how many cpu_count/X use for every population member
+resources_per_trial_cpu_divider: 2
+# how many gpu_count/X use for every population member 1GPU / 2 = 0.5 - 2 parallel population members
+resources_per_trial_gpu_divider: 2
+max_training_iterations: 10
 population_synch: True
-population_quantile_fraction: 0.3 # top x% models copied over to bottom x% models
+population_quantile_fraction: 0.25 # top x% models copied over to bottom x% models
 population_metric: mean_loss
 population_mode: min
 
