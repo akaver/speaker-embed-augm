@@ -14,7 +14,8 @@ openrir_folder: !ref <base_folder>
 
 # voxceleb data folders will be scanned and all the found waves, id, lengths saved here
 # saves time on future runs
-voxceleb_file_info: !ref <data_folder>/file_info.pkl
+voxceleb_file_info_folder: !ref <base_folder>/voxdatainfo/
+voxceleb_file_info: !ref <voxceleb_file_info_folder>/file_info.pkl
 
 output_folder: !ref <data_folder>/results/<seed>
 save_folder: !ref <output_folder>/save
