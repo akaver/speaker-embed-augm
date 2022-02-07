@@ -127,7 +127,9 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
             num_gpus=gpus_per_trial),
         resources_per_trial={
             "cpu": 1,
-            "gpu": gpus_per_trial
+            "gpu": gpus_per_trial,
+            "extra_cpu": 1,
+            "extra_gpu": gpus_per_trial
         },
         metric="loss",
         mode="min",
