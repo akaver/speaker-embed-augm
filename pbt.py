@@ -1,5 +1,3 @@
-from ray.util.ray_lightning import RayPlugin
-
 global OPENRIR_FOLDER
 OPENRIR_FOLDER = ""
 import os
@@ -24,7 +22,9 @@ from torchvision import transforms
 
 # __import_tune_begin__
 from pytorch_lightning.loggers import TensorBoardLogger
+import ray
 from ray import tune
+from ray.util.ray_lightning import RayPlugin
 from ray.tune import CLIReporter, JupyterNotebookReporter
 from ray.tune.schedulers import PopulationBasedTraining
 from ray.tune.integration.pytorch_lightning import TuneReportCallback, TuneReportCheckpointCallback
@@ -180,6 +180,8 @@ def main():
     gpu_count = torch.cuda.device_count()
 
     logger.info(f"CPUs {cpu_count} GPUs {gpu_count}")
+
+    ray.init()
 
     start_time = pc()
 
