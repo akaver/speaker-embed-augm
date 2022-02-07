@@ -56,7 +56,7 @@ def train_tune_checkpoint(
     trainer = Trainer(
         max_epochs=num_epochs,
         # If fractional GPUs passed in, convert to int.
-        gpus=math.ceil(num_gpus),
+        # gpus=math.ceil(num_gpus),
         logger=TensorBoardLogger(save_dir=tune.get_trial_dir(), name="", version="."),
         progress_bar_refresh_rate=0,
         num_sanity_val_steps=0,
