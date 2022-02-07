@@ -179,7 +179,7 @@ def main():
     cpu_count = multiprocessing.cpu_count()
     gpu_count = torch.cuda.device_count()
 
-    print(f"CPUs {cpu_count} GPUs {gpu_count}")
+    logger.info(f"CPUs {cpu_count} GPUs {gpu_count}")
 
     start_time = pc()
 
