@@ -1,3 +1,5 @@
+import gc
+
 global OPENRIR_FOLDER
 OPENRIR_FOLDER = ""
 import os
@@ -9,6 +11,7 @@ import random
 import multiprocessing
 from time import sleep, perf_counter as pc
 from hyperpyyaml import load_hyperpyyaml
+import GPUtil as GPU
 
 # __import_lightning_begin__
 import torch
@@ -23,6 +26,7 @@ from torchvision import transforms
 # __import_tune_begin__
 from pytorch_lightning.loggers import TensorBoardLogger
 from ray import tune
+from ray.tune import Callback
 from ray.tune import CLIReporter, JupyterNotebookReporter
 from ray.tune.schedulers import PopulationBasedTraining
 from ray.tune.integration.pytorch_lightning import TuneReportCallback, TuneReportCheckpointCallback
@@ -43,6 +47,9 @@ def train_tune_checkpoint(
         num_epochs=999,
         num_gpus=0
 ):
+    torch.cuda.empty_cache()
+    tune.utils.wait_for_gpu(target_util=0.5)
+
     progress_bar = pl.callbacks.progress.TQDMProgressBar(refresh_rate=25)
 
     data = VoxCelebLightningDataModule(hparams)
@@ -76,10 +83,69 @@ def train_tune_checkpoint(
         model = EcapaTdnnLightningModule(hparams=hparams, out_neurons=data.get_label_count())
         logger.info('Lightning initialized')
 
+    torch.cuda.empty_cache()
+    tune.utils.wait_for_gpu(target_util=0.5)
+
+    t = torch.cuda.get_device_properties(0).total_memory
+    r = torch.cuda.memory_reserved(0)
+    a = torch.cuda.memory_allocated(0)
+    f = r - a
+    logger.info(f"GPU Mem: {t}, Reserved {r}, alloc {a}, free {f}")
+    print(f"GPU Mem: {t}, Reserved {r}, alloc {a}, free {f}")
+
     trainer.fit(model, data)
 
+    del model
+    del data
+    torch.cuda.empty_cache()
+    tune.utils.wait_for_gpu(target_util=0.5)
+    gc.collect()
 
-def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_trial=0, conf=None):
+
+class TuneCallback(Callback):
+    def on_step_begin(self, iteration, trials, **info):
+        logging.error("on_step_begin")
+        pass
+
+    def on_step_end(self, iteration, trials, **info):
+        logging.error("on_step_end")
+        pass
+
+    def on_trial_start(self, iteration, trials, trial, **info):
+        logging.error("on_trial_start")
+        pass
+
+    def on_trial_restore(self, iteration, trials, trial, **info):
+        logging.error("on_trial_restore")
+        pass
+
+    def on_trial_save(self, iteration, trials, trial, **info):
+        logging.error("on_trial_save")
+        pass
+
+    def on_trial_result(self, iteration, trials, trial, result, **info):
+        logging.error("on_trial_result")
+        pass
+
+    def on_trial_complete(self, iteration, trials, trial, ** info):
+        trial.ERROR
+        logging.error("on_trial_complete")
+        pass
+
+    def on_trial_error(self, iteration, trials, trial, ** info):
+        logging.error("on_checkpoint")
+        pass
+
+    def on_checkpoint(self, iteration, trials, trial, checkpoint, **info):
+        logging.error("on_experiment_end")
+        pass
+
+    def on_experiment_end(self, trials, **info):
+        logging.error("on_experiment_end")
+        pass
+
+
+def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_trial=0, conf=None, max_error_count=0):
 
     def explore(conf):
         # calculate new magnitudes for augmentations
@@ -97,7 +163,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
         custom_explore_fn=explore,
         log_config=True,
         require_attrs=True,
-        quantile_fraction=0.25 # % of top performes used
+        quantile_fraction=0.25 # % of top performers used
     )
 
     progress_reporter = CLIReporter(
@@ -116,10 +182,19 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
 
     conf['augmentations'] = tune.sample_from(lambda spec: initial_augmentations(spec))
 
+    resume_type = False
+    if max_error_count > 0:
+        resume_type = True
+
+    logging.info(f"Resume type: {resume_type}")
+
+    max_error_count = 15
+
     analysis = tune.run(
         tune.with_parameters(
             train_tune_checkpoint,
-            num_gpus=gpus_per_trial),
+            num_gpus=gpus_per_trial
+        ),
         resources_per_trial={
             "cpu": cpus_per_trial,
             "gpu": gpus_per_trial
@@ -133,8 +208,10 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
         verbose=1,
         name="voxceleb-pbt",
         stop={  # Stop a single trial if one of the conditions are met
-            "training_iteration": training_iteration},
+            "training_iteration": max_error_count + 1},
         local_dir="./data",
+        max_failures=0, # max_error_count,
+        resume=resume_type,
     )
 
     print("Best hyperparams found were: ", analysis.best_config)
@@ -142,7 +219,6 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
 
 
 def main():
-
     logging.basicConfig(stream=sys.stderr, level=logging.INFO)
     logger.info("Starting...")
 
@@ -181,7 +257,9 @@ def main():
         training_iteration=hparams['max_training_iterations'],
         cpus_per_trial=cpu_count/hparams['resources_per_trial_cpu_divider'],
         gpus_per_trial=gpu_count/hparams['resources_per_trial_gpu_divider'],
-        conf=hparams)
+        conf=hparams,
+        max_error_count=run_opts['max_error_count']
+    )
 
     analysis.best_config
     analysis.results

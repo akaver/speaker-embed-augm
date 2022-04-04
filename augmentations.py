@@ -15,7 +15,7 @@ import uuid
 import logging
 import contextlib
 from types import MethodType
-import augly.audio as audaugs
+# import augly.audio as audaugs
 import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
@@ -66,7 +66,7 @@ logger = logging.getLogger(__name__)
     where is it located? cuda vs cpu
 """
 
-
+"""
 def add_background_noise_white_noise_20db(audio, sample_rate=16000):
     aug_audio, sr = audaugs.add_background_noise(audio.cpu().numpy(), sample_rate=sample_rate, snr_level_db=20)
     return torch.from_numpy(aug_audio).to(audio.device)
@@ -121,7 +121,7 @@ def time_stretch_up_10(audio, sample_rate=16000):
 def time_stretch_down_10(audio, sample_rate=16000):
     aug_audio, sr = audaugs.time_stretch(audio.cpu().numpy(), sample_rate=sample_rate, rate=0.9)
     return torch.from_numpy(aug_audio).to(audio.device)
-
+"""
 
 class TimeDomainSpecAugment(torch.nn.Module):
     """A time-domain approximation of the SpecAugment algorithm.

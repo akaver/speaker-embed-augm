@@ -155,6 +155,11 @@ def parse_arguments(arg_list):
         help="A yaml-formatted file using the extended YAML syntax. "
              "Multiple files loaded in order on top of required yaml",
     )
+    parser.add_argument(
+        "--max_error_count",
+        type=int,
+        help="Max number of errors allowed in Tune trials",
+    )
 
     # Accept extra args to override yaml
     run_opts, overrides = parser.parse_known_args(arg_list)
