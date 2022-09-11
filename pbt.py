@@ -47,7 +47,13 @@ def train_tune_checkpoint(
         num_epochs=999,
         num_gpus=0
 ):
+    gc.collect()
     torch.cuda.empty_cache()
+    with torch.no_grad():
+        torch.cuda.empty_cache()
+
+    GPU.showUtilization()
+
     tune.utils.wait_for_gpu(target_util=0.5)
 
     progress_bar = pl.callbacks.progress.TQDMProgressBar(refresh_rate=25)
@@ -95,11 +101,16 @@ def train_tune_checkpoint(
 
     trainer.fit(model, data)
 
+    GPU.showUtilization()
     del model
     del data
+    gc.collect()
     torch.cuda.empty_cache()
+    with torch.no_grad():
+        torch.cuda.empty_cache()
     tune.utils.wait_for_gpu(target_util=0.5)
     gc.collect()
+    GPU.showUtilization()
 
 
 class TuneCallback(Callback):
