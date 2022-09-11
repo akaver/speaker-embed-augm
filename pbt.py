@@ -25,8 +25,10 @@ from torchvision import transforms
 
 # __import_tune_begin__
 from pytorch_lightning.loggers import TensorBoardLogger
+import ray
 from ray import tune
 from ray.tune import Callback
+from ray.util.ray_lightning import RayPlugin
 from ray.tune import CLIReporter, JupyterNotebookReporter
 from ray.tune.schedulers import PopulationBasedTraining
 from ray.tune.integration.pytorch_lightning import TuneReportCallback, TuneReportCheckpointCallback
@@ -36,7 +38,7 @@ from EcapaTdnnLightningModule import EcapaTdnnLightningModule
 from VoxCelebLightningDataModule import VoxCelebLightningDataModule
 from utils import parse_arguments
 
-logger = logging.getLogger('App')
+logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
@@ -62,6 +64,8 @@ def train_tune_checkpoint(
 
     logger.info(f"Speakers found {data.get_label_count()}")
 
+    ray_plugin = RayPlugin(num_workers=1, num_cpus_per_worker=1, use_gpu=True)
+
     trainer = Trainer(
         max_epochs=num_epochs,
         # If fractional GPUs passed in, convert to int.
@@ -78,7 +82,8 @@ def train_tune_checkpoint(
                 on="validation_end"
             ),
             progress_bar
-        ]
+        ],
+        # plugins=[ray_plugin]
     )
 
     if checkpoint_dir:
@@ -174,7 +179,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
         custom_explore_fn=explore,
         log_config=True,
         require_attrs=True,
-        quantile_fraction=0.25 # % of top performers used
+        quantile_fraction=conf['population_quantile_fraction'] # % of top performes used
     )
 
     progress_reporter = CLIReporter(
@@ -207,8 +212,10 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
             num_gpus=gpus_per_trial
         ),
         resources_per_trial={
-            "cpu": cpus_per_trial,
-            "gpu": gpus_per_trial
+            "cpu": 1,
+            "gpu": gpus_per_trial,
+            "extra_cpu": 1,
+            "extra_gpu": gpus_per_trial
         },
         metric="loss",
         mode="min",
@@ -259,7 +266,9 @@ def main():
     cpu_count = multiprocessing.cpu_count()
     gpu_count = torch.cuda.device_count()
 
-    print(f"CPUs {cpu_count} GPUs {gpu_count}")
+    logger.info(f"CPUs {cpu_count} GPUs {gpu_count}")
+
+    ray.init()
 
     start_time = pc()
 

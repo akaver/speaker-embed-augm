@@ -1,4 +1,4 @@
-# conf for running on ML server 8xA100
+# conf for running on ML server 8xA100 for producing the training schedule
 
 skip_prep: False
 
@@ -7,14 +7,15 @@ seed: 1986
 base_folder: /state/partition1/data # /mnt/ml-stuff2 # /data in docker
 
 # generated data splits, checkpoints, etc
-data_folder: !ref <base_folder>/voxdata
+data_folder: !ref <base_folder>/voxdata-pbt
 
 openrir_folder: !ref <base_folder>
 
 
 # voxceleb data folders will be scanned and all the found waves, id, lengths saved here
 # saves time on future runs
-voxceleb_file_info: !ref <data_folder>/file_info.pkl
+voxceleb_file_info_folder: !ref <base_folder>/voxdatainfo/
+voxceleb_file_info: !ref <voxceleb_file_info_folder>/file_info.pkl
 
 output_folder: !ref <data_folder>/results/<seed>
 save_folder: !ref <output_folder>/save
@@ -35,8 +36,11 @@ verification_file: !ref <data_folder>/verification.txt
 # number of unique speakers to use (before split)
 # speaker_quantity: 2500
 
+# limit the number of utterances used after first limiting speakers
+utterance_quantity: 20000
+
 # number of random test pairs to use from verification_file
-# test_pairs_quantity: 200
+test_pairs_quantity: 2000
 
 # how should data be split between train/valid
 split_ratio: 90
@@ -73,7 +77,7 @@ population_size: 16
 # how many cpu_count/X use for every population member
 resources_per_trial_cpu_divider: 2
 # how many gpu_count/X use for every population member 1GPU / 2 = 0.5 - 2 parallel population members
-resources_per_trial_gpu_divider: 16
+resources_per_trial_gpu_divider: 1
 max_training_iterations: 20
 population_synch: True
 population_quantile_fraction: 0.25 # top x% models copied over to bottom x% models

@@ -82,6 +82,5 @@ resources_per_trial_gpu_divider: 2
 max_training_iterations: 20
 population_synch: True
 population_quantile_fraction: 0.25 # top x% models copied over to bottom x% models
-population_metric: mean_loss
-population_mode: min
+
 
