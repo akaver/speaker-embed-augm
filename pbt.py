@@ -12,6 +12,7 @@ import multiprocessing
 from time import sleep, perf_counter as pc
 from hyperpyyaml import load_hyperpyyaml
 import GPUtil as GPU
+import time
 
 # __import_lightning_begin__
 import torch
@@ -56,7 +57,10 @@ def train_tune_checkpoint(
 
     GPU.showUtilization()
 
-    tune.utils.wait_for_gpu(target_util=0.5)
+    try:
+        tune.utils.wait_for_gpu(target_util=0.5)
+    except Exception as e:
+        print(e.__class__)
 
     progress_bar = pl.callbacks.progress.TQDMProgressBar(refresh_rate=25)
 
@@ -64,7 +68,7 @@ def train_tune_checkpoint(
 
     logger.info(f"Speakers found {data.get_label_count()}")
 
-    ray_plugin = RayPlugin(num_workers=1, num_cpus_per_worker=1, use_gpu=True)
+    # ray_plugin = RayPlugin(num_workers=1, num_cpus_per_worker=1, use_gpu=True)
 
     trainer = Trainer(
         max_epochs=num_epochs,
@@ -95,7 +99,11 @@ def train_tune_checkpoint(
         logger.info('Lightning initialized')
 
     torch.cuda.empty_cache()
-    tune.utils.wait_for_gpu(target_util=0.5)
+
+    try:
+        tune.utils.wait_for_gpu(target_util=0.5)
+    except Exception as e:
+        print(e.__class__)
 
     t = torch.cuda.get_device_properties(0).total_memory
     r = torch.cuda.memory_reserved(0)
@@ -106,14 +114,25 @@ def train_tune_checkpoint(
 
     trainer.fit(model, data)
 
+
+
     GPU.showUtilization()
     del model
     del data
+    time.sleep(5.0)
     gc.collect()
     torch.cuda.empty_cache()
     with torch.no_grad():
         torch.cuda.empty_cache()
-    tune.utils.wait_for_gpu(target_util=0.5)
+
+    time.sleep(5.0)
+
+    try:
+        tune.utils.wait_for_gpu(target_util=0.5)
+    except Exception as e:
+        print(e.__class__)
+
+    time.sleep(5.0)
     gc.collect()
     GPU.showUtilization()
 
@@ -143,12 +162,12 @@ class TuneCallback(Callback):
         logging.error("on_trial_result")
         pass
 
-    def on_trial_complete(self, iteration, trials, trial, ** info):
+    def on_trial_complete(self, iteration, trials, trial, **info):
         trial.ERROR
         logging.error("on_trial_complete")
         pass
 
-    def on_trial_error(self, iteration, trials, trial, ** info):
+    def on_trial_error(self, iteration, trials, trial, **info):
         logging.error("on_checkpoint")
         pass
 
@@ -162,7 +181,6 @@ class TuneCallback(Callback):
 
 
 def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_trial=0, conf=None, max_error_count=0):
-
     def explore(conf):
         # calculate new magnitudes for augmentations
         augmentations = []
@@ -179,7 +197,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
         custom_explore_fn=explore,
         log_config=True,
         require_attrs=True,
-        quantile_fraction=conf['population_quantile_fraction'] # % of top performes used
+        quantile_fraction=conf['population_quantile_fraction']  # % of top performes used
     )
 
     progress_reporter = CLIReporter(
@@ -211,12 +229,16 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
             train_tune_checkpoint,
             num_gpus=gpus_per_trial
         ),
-        resources_per_trial={
-            "cpu": 1,
-            "gpu": gpus_per_trial,
-            "extra_cpu": 1,
-            "extra_gpu": gpus_per_trial
-        },
+        # resources_per_trial=tune.PlacementGroupFactory([
+        #     {
+        #         # "cpu": 1,
+        #         "gpu": gpus_per_trial,
+        #         # "extra_cpu": 1,
+        #         # "extra_gpu": gpus_per_trial
+        #     }
+        # ]),
+        resources_per_trial={'gpu': 0.5, 'cpu': 1},
+        reuse_actors=True,
         metric="loss",
         mode="min",
         config=conf,
@@ -228,7 +250,7 @@ def tune_pbt(num_samples=15, training_iteration=15, cpus_per_trial=1, gpus_per_t
         stop={  # Stop a single trial if one of the conditions are met
             "training_iteration": max_error_count + 1},
         local_dir="./data",
-        max_failures=0, # max_error_count,
+        max_failures=0,  # max_error_count,
         resume=resume_type,
     )
 
@@ -275,8 +297,8 @@ def main():
     analysis = tune_pbt(
         num_samples=hparams['population_size'],
         training_iteration=hparams['max_training_iterations'],
-        cpus_per_trial=cpu_count/hparams['resources_per_trial_cpu_divider'],
-        gpus_per_trial=gpu_count/hparams['resources_per_trial_gpu_divider'],
+        cpus_per_trial=cpu_count / hparams['resources_per_trial_cpu_divider'],
+        gpus_per_trial=gpu_count / hparams['resources_per_trial_gpu_divider'],
         conf=hparams,
         max_error_count=run_opts['max_error_count']
     )
